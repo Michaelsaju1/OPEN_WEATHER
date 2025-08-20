@@ -1,6 +1,9 @@
 import requests
 import os
 from dotenv import load_dotenv
+import streamlit as st
+from streamlit_chat import message
+import regex as re
 
 # Load your API key from .env file
 load_dotenv()
@@ -36,19 +39,40 @@ def get_weather(city):
     description = data["weather"][0]["description"]
     
     # 6. Print
-    print(f"In {city_name}, the low is {temp_min}°C and the max is {temp_max}°C. It is {temp}°C with {description} although it feels like {feels_like}°C. The humidity is {humidity}.")
+    return(f"In {city_name}, the low is {temp_min}°C and the max is {temp_max}°C. It is {temp}°C with {description} although it feels like {feels_like}°C. The humidity is {humidity}.")
 
-#Take in user input for City.
-print("Please enter your the city name that you would like the weather for: ")
-city = input()
+#Now incorporating this with Streamlit and input on there from the user
+# Initialize a session state list to hold the conversation
+if "history" not in st.session_state:
+    st.session_state.history = []
 
-# Try it with Raleigh
-try: 
-    get_weather(city)
-except:
-    print("Sorry! That is not a valid city. Please try again.")
+st.header("Weather App")
+st.markdown("Please enter the city you would like the weather for below:")
+# 1. Capture user input
+col1, col2 = st.columns([3, 1])
+with col1:
+    user_input = st.text_input("Please enter the city you would like the weather for below:", key="input", label_visibility="collapsed")
+with col2:
+    submit_button = st.button("Get Weather")
 
-#Check if there is any other city they want to check
-print("Are there any other cities you would like to check the weather for? If so, please enter it here: ")
-city = input()
-get_weather(city)
+if not user_input:
+    st.stop()
+        
+# 2. Run when user presses Enter OR button
+if user_input or st.button("Get Weather"):
+    # Get weather
+    bot_response = get_weather(user_input)
+
+    # Save chat
+    st.session_state.history.append({
+        "user": user_input,
+        "bot": bot_response
+    })
+
+    # Clear input box
+    st.session_state.city_input = ""
+
+# 3. Display the chat history
+for i, chat in enumerate(st.session_state.history):
+    message(chat["user"], is_user=True, key=f"user_{i}")
+    message(chat["bot"],     key=f"bot_{i}")
