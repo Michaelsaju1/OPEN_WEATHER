@@ -11,6 +11,8 @@ This script uses Python 3.11.9 and requires the following libraries
 1. requests
 2. os
 3. dotenv
+4. streamlit
+5. streamlit_chat
 
 Steps to run script
 1. Open the driectiory in VS Code
